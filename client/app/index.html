@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Holdem!</title>
+    <link rel="stylesheet" href="scripts/playingCards.ui.css" type="text/css"/>
+    <script src="client/app/bower_components/jquery/jquery.min.js"></script>
+    <script src="scripts/playingCards.ui.js"></script>
+    <style type="text/css">
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin-top: -15px;
+            margin-left: -15px;
+        }
+    </style>
+
+
+</head>
+<body>
+<button id="new_btn">New</button>
+<button id="reset_btn">RESET</button>
+<br/>
+<input type="text" id="gameId_input"/>
+<button id="getgame_btn">Load Game</button>
+<br/>
+<input type="text" id="player_input"/>
+<button id="player_btn">Add Player</button>
+<br/>
+<button id="deal_btn">Deal!</button>
+<button id="eval_btn">Evaluate Hand(s)</button>
+<div>
+    Community Cards:
+    <div id="community"></div>
+</div>
+<div style="clear: both;"></div>
+<br/>
+
+<div id="players">
+</div>
+
+
+<div class="loader">
+    <img src="img/ajax-loader.gif"/>
+</div>
+<script src="scripts/main.js">
+
+</script>
+</body>
+</html>

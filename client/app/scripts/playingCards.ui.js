@@ -22,6 +22,10 @@
 
 var playingCard = function (card) {
     this.rank = card.substr(0, card.length - 1);
+    //change rank from T to 10
+    if (this.rank === 'T') {
+        this.rank = '10';
+    }
     this.suit = card.substr(card.length - 1, 1).toUpperCase();
 }
 /**
@@ -70,7 +74,6 @@ playingCard.prototype.getHTML = function () {
  * @return string The HTML block for the middle of the card
  */
 playingCard.prototype.buildIconHTML = function () {
-    // TODO: could we optimize this with a for loop that breaks/continues to named positions?
     if (this.rank === "A") {
         return ['<div class="suit suit0">', this.suitCode, '</div>'];
     }

@@ -91,7 +91,7 @@ $(function () {
                         });
                         ele.data('cards', cards);
                         ele.append(' <span class="eval-span"></span>');
-                        ele.append(' <a href="#" class="player-hand">Show Hand</a> <a href="#"class="player-eval">Show %</a>');
+                        ele.append(' <button class="player-hand">Show Hand</button> <button class="player-eval">Show %</button>');
                         ele.append('<br/><div class="cards-span"></div>');
                         ele.append('<div style="clear: both;"></div>');
 
@@ -131,6 +131,13 @@ $(function () {
         $('#deal_btn').prop('disabled', (!currentGame || currentGame.game.community.length === 5 || currentGame.game.hands.length === 0));
         $('#eval_btn').prop('disabled', (!currentGame || !currentGame.dealt));
     }
+
+    $('#show_btn').on('click', function () {
+        $('.player-hand, .player-eval').data('shown', false).click();
+    });
+    $('#hide_btn').on('click', function() {
+        $('.player-hand, .player-eval').data('shown', true).click();
+    });
 
     //bind click handlers
     function bindShowHides() {

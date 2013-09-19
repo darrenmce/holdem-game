@@ -4,7 +4,7 @@
   "description": "A Library for calculating HoldEm odds",
   "main": "holdemOdds.js",
   "dependencies": {
-      "poker-sim": "0.0.5",
+      "poker-sim": "0.0.6",
       "express" : "3.4.0",
       "redis": "*"
   }

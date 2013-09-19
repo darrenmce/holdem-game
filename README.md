@@ -6,6 +6,11 @@ A small express/redis/jquery game utilizing poker-sim and playingCards.js to pla
 Usage
 ----------
 
+install bower components
+```
+bower install
+```
+
 npm install make take a while, poker-sim uses poker-evaluator which uses a 130meg data file
 ```
 npm install

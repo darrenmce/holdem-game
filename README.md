@@ -22,9 +22,9 @@ npm install
 redis-server
 ```
 
-Run the game, use the **--nodb**_ flag if not running the redis server
+Run the game. Use the **--nodb**_ flag if not running the redis server and Use **-l** flag for verbose logging (express.logger).
 ```
-node game [--nodb]
+node game [--nodb] [-l]
 ```
 
 Then open a browser to [http://localhost:3000](http://localhost:3000)

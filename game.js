@@ -4,12 +4,17 @@ var redis = require('redis');
 var _ = require('underscore');
 
 var app = express();
-
 //get args
 var args = process.argv.splice(2, process.argv.length);
 
-//db-offline-flag
+//nodb flag
 var dbmode = args.indexOf('--nodb') < 0;
+
+//log flag
+if (args.indexOf('-l') >= 0) {
+    console.log('enabling logger');
+    app.use(express.logger());
+}
 
 var db = dbmode ? redis.createClient() : false;
 
@@ -21,6 +26,9 @@ if (dbmode) {
 //all active games
 var games = {};
 
+function output(message){
+    console.log('*** '+message+' ***');
+}
 function saveGame(gameId) {
     if (dbmode) {
         db.set('ps-game-' + gameId, JSON.stringify(games[gameId].game.getSave()));
@@ -29,26 +37,31 @@ function saveGame(gameId) {
 
 //main page retrieval
 app.get('/', function (req, res) {
+    output('get /');
     res.sendfile(__dirname + '/client/app/index.html');
 });
 
 //bower script retrieval
 app.get('/client/app/bower_components/:component/:file', function (req, res) {
+    output('get bower_component: '+req.params.component+'/'+req.params.file);
     res.sendfile(__dirname + '/client/app/bower_components/' + req.params.component + '/' + req.params.file);
 });
 
 //app script retrieval
 app.get('/scripts/:file', function (req, res) {
+    output('get script: '+req.params.file);
     res.sendfile(__dirname + '/client/app/scripts/' + req.params.file);
 });
 
 //img retrieval
 app.get('/img/:file', function (req, res) {
+    output('get img: '+req.params.file);
     res.sendfile(__dirname + '/client/app/img/' + req.params.file);
 });
 
 //get a new game
 app.get('/new', function (req, res) {
+    output('get new game.');
     if (dbmode) {
         db.incr('ps-gameincr', function (err, reply) {
             var gameId = reply;
@@ -77,6 +90,8 @@ app.get('/new', function (req, res) {
 });
 
 app.get('/reset', function (req, res) {
+    output('reset games/db.');
+
     //empty games
     games = {};
 
@@ -97,6 +112,8 @@ app.get('/reset', function (req, res) {
 });
 
 app.get('/game/:gameId', function (req, res) {
+    output('get game: ' + req.params.gameId);
+
     var gameId = req.params.gameId;
     var gameObj = games[gameId] || false;
     if (gameObj.game) {
@@ -118,9 +135,6 @@ app.get('/game/:gameId', function (req, res) {
             };
 
             gameObj = games[gameId];
-            console.log(gameObj);
-
-
             if (gameObj) {
                 var game = gameObj.game;
                 if (game) {
@@ -142,6 +156,8 @@ app.get('/game/:gameId', function (req, res) {
 
 //addplayer
 app.get('/game/:gameId/addplayer/:player', function (req, res) {
+    output('add player: ' + req.params.player+ ' to game: ' + req.params.gameId);
+
     var gameId = req.params.gameId;
     var gameObj = games[gameId] || false;
     if (gameObj.game) {
@@ -156,6 +172,8 @@ app.get('/game/:gameId/addplayer/:player', function (req, res) {
 
 //deal! either deals to players, or turns community cards
 app.get('/game/:gameId/deal', function (req, res) {
+    output('deal to game: ' + req.params.gameId);
+
     var gameId = req.params.gameId;
     var gameObj = games[gameId] || false;
     if (gameObj.game) {
@@ -184,6 +202,8 @@ app.get('/game/:gameId/deal', function (req, res) {
 
 //evaluate game (can only be called once game has dealt)
 app.get('/game/:gameId/eval', function (req, res) {
+    output('evaluate  game: ' + req.params.gameId);
+
     var gameId = req.params.gameId;
     var gameObj = games[gameId] || false;
     if (gameObj.game && gameObj.dealt) {

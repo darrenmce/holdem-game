@@ -1,19 +1,30 @@
-var ps = require('poker-sim');
+var pokersim = require('poker-sim');
 var express = require('express');
 var redis = require('redis');
-
-var db = redis.createClient(6379, '127.0.0.1');
-db.on("error", function (err) {
-    console.log("Error " + err);
-});
-
-//all active games
-var games = {};
+var _ = require('underscore');
 
 var app = express();
 
+//get args
+var args = process.argv.splice(2, process.argv.length);
+
+//db-offline-flag
+var dbmode = args.indexOf('--nodb') < 0;
+
+var db = dbmode ? redis.createClient() : false;
+
+if (dbmode) {
+    db.on("error", function (err) {
+        console.log("Error " + err);
+    });
+}
+//all active games
+var games = {};
+
 function saveGame(gameId) {
-    db.set('ps-game-' + gameId, JSON.stringify(games[gameId].game.getSave()));
+    if (dbmode) {
+        db.set('ps-game-' + gameId, JSON.stringify(games[gameId].game.getSave()));
+    }
 }
 
 //main page retrieval
@@ -38,32 +49,48 @@ app.get('/img/:file', function (req, res) {
 
 //get a new game
 app.get('/new', function (req, res) {
-    db.incr('ps-gameincr', function (err, reply) {
-        var gameId = reply;
+    if (dbmode) {
+        db.incr('ps-gameincr', function (err, reply) {
+            var gameId = reply;
 
+            games[gameId] = {
+                game: new pokersim.Game(),
+                dealt: false,
+                community: 0
+            };
+            saveGame(gameId);
+            res.send({
+                gameId: gameId
+            });
+        });
+    } else {
+        var gameId = _.size(games) + 1;
         games[gameId] = {
-            game: new ps.Game(),
+            game: new pokersim.Game(),
             dealt: false,
             community: 0
         };
-        saveGame(gameId);
         res.send({
             gameId: gameId
         });
-    });
+    }
 });
 
 app.get('/reset', function (req, res) {
-    db.set('ps-gameincr', "0", redis.print);
     //empty games
     games = {};
-    //clear DB of games
-    db.keys('ps-game-*', function (err, keys) {
-        keys.forEach(function (key) {
-            console.log('deleting game: ' + key);
-            db.del(key);
+
+    if (dbmode) {
+        db.set('ps-gameincr', "0", redis.print);
+        //clear DB of games
+        db.keys('ps-game-*', function (err, keys) {
+            keys.forEach(function (key) {
+                console.log('deleting game: ' + key);
+                db.del(key);
+            });
         });
-    });
+    }
+
     res.send({
         status: true
     });
@@ -78,12 +105,12 @@ app.get('/game/:gameId', function (req, res) {
             game: game.getGame(),
             dealt: gameObj.dealt
         });
-    } else {
+    } else if (dbmode){
         //retrieve game from database
         db.get('ps-game-' + gameId, function (err, data) {
 
             var gameSave = JSON.parse(data);
-            var newGame = new ps.Game(gameSave);
+            var newGame = new pokersim.Game(gameSave);
             games[gameId] = {
                 game: newGame,
                 dealt: newGame.cardsDealt === 2,
@@ -108,6 +135,8 @@ app.get('/game/:gameId', function (req, res) {
                 res.send({status: false});
             }
         });
+    } else {
+        res.send({status: false});
     }
 });
 
@@ -125,7 +154,7 @@ app.get('/game/:gameId/addplayer/:player', function (req, res) {
     }
 });
 
-//deal! only gets called once per game
+//deal! either deals to players, or turns community cards
 app.get('/game/:gameId/deal', function (req, res) {
     var gameId = req.params.gameId;
     var gameObj = games[gameId] || false;

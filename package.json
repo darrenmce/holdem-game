@@ -6,6 +6,7 @@
   "dependencies": {
       "poker-sim": "0.0.6",
       "express" : "3.4.0",
-      "redis": "*"
+      "redis": "*",
+      "underscore":"*"
   }
 }
